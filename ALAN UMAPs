@@ -1,0 +1,38 @@
+# This script is used to generate UMAP outputs from ALAN Algorithm using input dataset
+#
+# Purpose: This script takes ALAN Export Matrix 2 values and outputs a UMAP dimensional reduction
+#          of all gene networks.
+#
+# Required files: ALAN2 Output csv file of correlation coefficients
+#   1) "data_ALAN2.csv" - ALAN outpt from gene expression dataset
+#                       - Each row represents a gene
+#                       - Each column represents a gene
+#                       - First column contains the gene names
+#                       - First row contains the gene names
+#
+# Outputs:
+#   1) "data_ALAN2_UMAP.txt" - UMAP coordinates for ALAN Export Matrix 2 dataset
+#
+# Abderrahman Day and Hannah E Bergom
+#--------------------------------------------------------------------------------------------
+
+# Load packages
+library(umap)
+library(tidyverse)
+
+# Set input and output directories
+input_filepath <- "data_ALAN2.csv"
+out_filepath <- "data_ALAN2_UMAP.txt"
+
+# Read, parse, and clean input dataset
+data <- read_delim(input_filepath, delim = ",") %>% 
+  column_to_rownames(var ="gene")
+
+# Compute UMAP coordinates, save as dataframe
+data_umap <- umap(data)
+data_umap2 <- data_umap$layout %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "gene")
+
+# Write output UMAP coordinates
+write_delim(data_umap2, file = out_filepath, delim = "\t")
