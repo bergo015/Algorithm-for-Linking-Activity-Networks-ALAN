@@ -1,0 +1,52 @@
+# ALAN Algorithm Script
+# Prerequisite script for all ALAN outputs
+#
+# Purpose: This script takes gene expression data from multiple samples and returns 
+#          the gene profiles and gene networks for all genes via ALAN.
+#
+# Required files: csv file of gene expression data
+#   1) "data.csv"   - gene expression matrix from patient tumors
+#                   - Each row represents a gene
+#                   - Each column represents a sample
+#                   - First column contains the gene names
+#                   - First row contains sample names
+#
+# Output: 
+#   1) "data_ALAN1.csv" - csv file of all ALAN Output Matrix 1 values
+#   2) "data_ALAN2.csv" - csv file of all ALAN Output Matrix 2 values
+# 
+#
+# Abderrahman Day, Ashraf Shabaneh, and Hannah E Bergom
+#-------------------------------------------------------------------------------
+
+# Packages
+library(tidyverse)
+
+input_filepath = "data.csv"                                 # Gene expression data filepath
+out_filepath1 = "data_ALAN1.csv"                            # Output filepath for ALAN Output Matrix 1
+out_filepath2 = "data_ALAN2.csv"                            # Output filepath for ALAN Output Matrix 2
+
+# Read data and generate ALAN Output - Matrix 1
+alan1 <- read_csv(input_filepath) %>%                       # Read expression data
+  column_to_rownames(var=colnames(.)[1]) %>%                # convert 1st column to rownames
+  t() %>%                                                   # transpose so that 1 column = 1 gene\
+  na.omit() %>%                                             # omit rows (patients) with any NAs
+  as.data.frame() %>%                                       # convert to df from matrix
+  .[,sapply(., function(v) var(v, na.rm=TRUE)!=0)] %>%      # remove columns (genes) with zero variance
+  cor(method = "spearman")                                  # Spearman correlation
+
+# Generate ALAN Output - Matrix 2
+alan2 <- alan1 %>%
+  cor(method = "pearson")                                   # Pearson correlation
+
+# Ouput ALAN1
+alan1 %>% 
+  as.data.frame() %>% 
+  rownames_to_column(var = "gene") %>% 
+  write_csv(out_filepath1)
+
+# Ouput ALAN2
+alan2 %>% 
+  as.data.frame() %>% 
+  rownames_to_column(var = "gene") %>% 
+  write_csv(out_filepath2)
