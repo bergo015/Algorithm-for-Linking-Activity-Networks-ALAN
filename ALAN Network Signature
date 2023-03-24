@@ -1,0 +1,64 @@
+# Uses:   ALAN Network Signature Analysis of ALAN dataset
+#
+# Purpose: This script extracts genes of interest from ALAN Export - Matrix 2 dataset and 
+#          assignes a threshold to determine an ALAN Network Signature
+#
+#   Inputs:
+#   1)  ALAN2 Output csv file of correlation coefficients
+#       "data_ALAN2.csv" - ALAN2 outpt from gene expression dataset
+#                        - Each row represents a gene
+#                        - Each column represents a gene
+#                        - First column contains gene symbols
+#                        - First row contains gene symbols
+#
+#   2) Primary gene of interest: Define this at the top of the script (goi <- "[myGene]")
+#       This must be saved as a character to the variable "goi"
+#   
+#   3) List of genes to compare: Define this at the top of the script 
+#       This must be saved as a character or list of characters to the variable "goi_list"
+#
+# Outputs:
+#   1) "data_ALAN2_GOI.csv" 
+#       CSV file of the gene network correlation coefficients between the list of genes of interest
+#       and genes associated with the primary gene of interest
+#
+# Abderrahman Day and Hannah Bergom
+#-------------------------------------------------------------------------------
+
+
+# Packages
+library(tidyverse)
+
+# Set input file paths
+in_path = "data_ALAN2.csv"
+out_path = "data_ALAN2_GOI.csv"
+
+# Define genes of interest
+goi <- "AR" # Primary gene of interest
+goi_list <- c("AR","FOXA1", "MYC") # List of genes to compare
+
+# Set threshold
+threshold <- 0.7
+
+# Set up threshold function
+gn_threshold_fun <- function(in_path, out_path, goi, goi_list, threshold){
+  # Import data
+  gene_nets <- read_csv(in_path)
+  
+  # Get list of genes associates with B7H3 (above threshold), save as character list
+  associated_goi <- gene_nets %>% 
+    select(1,goi=goi) %>% 
+    filter(goi > threshold) %>% 
+    select(gene) %>% 
+    unlist() %>% 
+    as.character()
+  
+  # Subset GeneNetwork for associated GOI list and input GOI list
+  gene_network_out <- gene_nets %>% 
+    select(gene,all_of(goi_list)) %>% 
+    filter(gene %in% associated_goi)
+  
+  write_csv(gene_network_out, file = out_path)
+}
+
+gn_threshold_fun(in_path, out_path, goi, goi_list, threshold)
