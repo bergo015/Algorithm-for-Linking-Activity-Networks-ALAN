@@ -1,1 +1,2 @@
-# Algorithm-for-Linking-Activity-Networks-ALAN-Hwang-Lab-UMN
+# Algorithm-for-Linking-Activity-Networks-ALAN
+https://zenodo.org/badge/latestdoi/490726216
